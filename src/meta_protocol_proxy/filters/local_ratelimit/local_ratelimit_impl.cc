@@ -2,6 +2,7 @@
 #include "src/meta_protocol_proxy/codec_impl.h"
 
 #include "source/common/protobuf/utility.h"
+#include "source/common/http/header_utility.h"
 
 namespace Envoy {
 namespace Extensions {

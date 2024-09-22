@@ -140,6 +140,7 @@ envoy_cc_library(
         "@envoy//source/common/init:target_lib",
         "@envoy//source/common/init:watcher_lib",
         "@envoy//source/common/protobuf:utility_lib",
+        "@envoy//source/common/grpc:common_lib",
         "@envoy_api//envoy/admin/v3:pkg_cc_proto",
         "@envoy_api//envoy/api/v2:pkg_cc_proto",
         "@envoy_api//envoy/config/core/v3:pkg_cc_proto",

@@ -11,6 +11,7 @@
 #include "source/common/config/utility.h"
 #include "source/common/http/header_map_impl.h"
 #include "source/common/protobuf/utility.h"
+#include "source/common/grpc/common.h"
 
 #include "src/meta_protocol_proxy/route/config_impl.h"
 
