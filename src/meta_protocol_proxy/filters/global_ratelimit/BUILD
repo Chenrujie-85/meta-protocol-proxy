@@ -37,7 +37,6 @@ envoy_cc_library(
         "@envoy_api//envoy/service/ratelimit/v3:pkg_cc_grpc",
         "@envoy//envoy/upstream:load_balancer_interface",
         "@envoy//envoy/upstream:thread_local_cluster_interface",
-        "@envoy//source/common/upstream:load_balancer_lib",
         "@envoy//envoy/stats:stats_interface",
         "@envoy//envoy/network:connection_interface",
         "@envoy//source/common/http:header_utility_lib",

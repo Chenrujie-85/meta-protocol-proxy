@@ -71,7 +71,7 @@ envoy_cc_library(
         "@envoy//envoy/upstream:load_balancer_interface",
         "@envoy//envoy/upstream:thread_local_cluster_interface",
         "@envoy//source/common/common:linked_object",
-        "@envoy//source/common/upstream:load_balancer_lib",
+        "@envoy//source/common/upstream:load_balancer_context_base_lib",
         "@envoy//source/extensions/filters/network:well_known_names",
     ],
 )
@@ -97,7 +97,6 @@ envoy_cc_library(
         "@envoy//source/common/http:header_utility_lib",
         "@envoy//source/common/router:metadatamatchcriteria_lib",
         "@envoy//source/common/stream_info:stream_info_lib",
-        "@envoy//source/common/upstream:load_balancer_lib",
     ],
 )
 

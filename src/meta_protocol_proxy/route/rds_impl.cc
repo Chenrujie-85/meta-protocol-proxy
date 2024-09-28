@@ -63,9 +63,9 @@ RdsRouteConfigSubscription::RdsRouteConfigSubscription(
       manager_identifier_(manager_identifier) {
   const auto resource_name = getResourceName();
   subscription_ =
-      factory_context.clusterManager().subscriptionFactory().subscriptionFromConfigSource(
+      std::move(factory_context.clusterManager().subscriptionFactory().subscriptionFromConfigSource(
           rds.config_source(), Envoy::Grpc::Common::typeUrl(resource_name), *scope_, *this,
-          resource_decoder_, {});
+          resource_decoder_, {}).value());
   local_init_manager_.add(local_init_target_);
   config_update_info_ = std::make_unique<RouteConfigUpdateReceiverImpl>(factory_context);
 }
