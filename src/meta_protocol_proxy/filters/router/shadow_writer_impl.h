@@ -9,7 +9,7 @@
 #include "source/common/common/linked_object.h"
 #include "source/common/common/logger.h"
 #include "source/common/buffer/buffer_impl.h"
-#include "source/common/upstream/load_balancer_context_base.h"
+#include "source/common/upstream/load_balancer_impl.h"
 
 #include "src/meta_protocol_proxy/decoder.h"
 #include "src/meta_protocol_proxy/filters/filter.h"
