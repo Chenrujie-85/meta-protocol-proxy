@@ -32,6 +32,7 @@ envoy_cc_library(
         "@envoy//envoy/stats:stats_interface",
         "@envoy//envoy/server:factory_context_interface",
         "@io_istio_proxy//extensions/common:proto_util",
+        "@io_istio_proxy//extensions/common:context",
     ],
 )
 
@@ -48,5 +49,6 @@ envoy_cc_library(
         "@envoy//source/common/stats:utility_lib",
         "@envoy//envoy/server:factory_context_interface",
         "@io_istio_proxy//extensions/common:proto_util",
+        "@io_istio_proxy//extensions/common:context",
     ],
 )

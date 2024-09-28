@@ -26,11 +26,10 @@ public:
   void log(SystemTime, const std::string&) override {}
   void finishSpan() override {}
   void injectContext(Envoy::Tracing::TraceContext&,
-                     const ::Envoy::Tracing::UpstreamContext&) override {}
+                     const Upstream::HostDescriptionConstSharedPtr&) override {}
   void setBaggage(absl::string_view, absl::string_view) override {}
   std::string getBaggage(absl::string_view) override { return EMPTY_STRING; }
-  std::string getTraceId() const override { return EMPTY_STRING; }
-  std::string getSpanId() const override { return EMPTY_STRING; };
+  std::string getTraceIdAsHex() const override { return EMPTY_STRING; }
   Envoy::Tracing::SpanPtr spawnChild(const Envoy::Tracing::Config&, const std::string&,
                                      SystemTime) override {
     return Envoy::Tracing::SpanPtr{new NullSpan()};
