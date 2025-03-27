@@ -21,18 +21,18 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_istio_proxy",
-    strip_prefix = "proxy-1.21.0",
-    sha256 = "007aa638869bad4e9b4a98c56518d033f59a67774e098307dffaf562832d3fa6",
-    url = "https://github.com/istio/proxy/archive/refs/tags/1.21.0.tar.gz",
+    strip_prefix = "proxy-1.22.0",
+    sha256 = "bc48799d4635174fbe1f875a5b82f97844809ad4027ad8b0106f5f4c2216d205",
+    url = "https://github.com/istio/proxy/archive/refs/tags/1.22.0.tar.gz",
 )
 
 # 1. Determine SHA256 `wget https://github.com/envoyproxy/envoy/archive/$COMMIT.tar.gz && sha256sum $COMMIT.tar.gz`
 # 2. Update .bazelversion, envoy.bazelrc and .bazelrc if needed.
 #
 # Commit date: 2024-08-22
-ENVOY_SHA = "2bb4cf1997597a981bc2bf3e500a9ae35787911e"
+ENVOY_SHA = "7f895e93006f03b3932d5bfa36c6071a70945c63"
 
-ENVOY_SHA256 = "0b2dc5ae343dd70f13730c16f9025ce4787f4ec60a8a4a1a5bdbab7f378506fc"
+ENVOY_SHA256 = "f481a5b218f9ebdc0c29205726073eb26c1b6816f7a25f1c1b888b3d1cbd86d1"
 
 ENVOY_ORG = "envoyproxy"
 

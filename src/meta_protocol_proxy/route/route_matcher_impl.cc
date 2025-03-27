@@ -31,9 +31,9 @@ bool RequestMirrorPolicyImpl::shouldShadow(Runtime::Loader& runtime, uint64_t st
 }
 
 RouteEntryImplBase::RouteEntryImplBase(
-    const aeraki::meta_protocol_proxy::config::route::v1alpha::Route& route)
+    const aeraki::meta_protocol_proxy::config::route::v1alpha::Route& route, Server::Configuration::CommonFactoryContext& context)
     : route_name_(route.name()), cluster_name_(route.route().cluster()),
-      config_headers_(Http::HeaderUtility::buildHeaderDataVector(route.match().metadata())),
+      config_headers_(Http::HeaderUtility::buildHeaderDataVector(route.match().metadata(), context)),
       mirror_policies_(buildMirrorPolicies(route.route())) {
   if (route.route().cluster_specifier_case() ==
       aeraki::meta_protocol_proxy::config::route::v1alpha::RouteAction::ClusterSpecifierCase::
@@ -135,8 +135,9 @@ RouteEntryImplBase::WeightedClusterEntry::WeightedClusterEntry(const RouteEntryI
       cluster_weight_(PROTOBUF_GET_WRAPPED_REQUIRED(cluster, weight)) {}
 
 RouteEntryImpl::RouteEntryImpl(
-    const aeraki::meta_protocol_proxy::config::route::v1alpha::Route& route)
-    : RouteEntryImplBase(route) {}
+    const aeraki::meta_protocol_proxy::config::route::v1alpha::Route& route,
+    Server::Configuration::CommonFactoryContext& context)
+    : RouteEntryImplBase(route, context) {}
 
 RouteEntryImpl::~RouteEntryImpl() = default;
 
@@ -151,11 +152,11 @@ RouteConstSharedPtr RouteEntryImpl::matches(const Metadata& metadata, uint64_t r
 
 RouteMatcherImpl::RouteMatcherImpl(
     const RouteConfig& config,
-    Server::Configuration::ServerFactoryContext&) { // TODO remove ServerFactoryContext parameter
+    Server::Configuration::ServerFactoryContext& context) {
   using aeraki::meta_protocol_proxy::config::route::v1alpha::RouteMatch;
 
   for (const auto& route : config.routes()) {
-    routes_.emplace_back(std::make_shared<RouteEntryImpl>(route));
+    routes_.emplace_back(std::make_shared<RouteEntryImpl>(route, context));
   }
   ENVOY_LOG(debug, "meta protocol route matcher: routes list size {}", routes_.size());
 }

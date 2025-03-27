@@ -15,10 +15,11 @@ LocalRateLimiterImpl::LocalRateLimiterImpl(
     const Protobuf::RepeatedPtrField<
         aeraki::meta_protocol_proxy::filters::local_ratelimit::v1alpha::LocalRateLimitCondition>&
     conditions,
-    const LocalRateLimitConfig& cfg)
+    const LocalRateLimitConfig& cfg,
+    Server::Configuration::ServerFactoryContext& context)
     : fill_timer_(dispatcher.createTimer([this] { onFillTimer(); })),
       time_source_(dispatcher.timeSource()), timer_duration_(fill_interval),
-      config_(cfg){
+      config_(cfg) {
   if (config_.has_token_bucket()) {
     // The global token bucket for the whole service
     global_token_bucket_.max_tokens_ = max_tokens;
@@ -46,7 +47,7 @@ LocalRateLimiterImpl::LocalRateLimiterImpl(
   // The more specified rate limit conditions
   for (const auto& condition : conditions) {
     LocalRateLimitCondition new_condition;
-    new_condition.match_ = Http::HeaderUtility::buildHeaderDataVector(condition.match().metadata());
+    new_condition.match_ = Http::HeaderUtility::buildHeaderDataVector(condition.match().metadata(), context);
     RateLimit::TokenBucket token_bucket;
     token_bucket.fill_interval_ =
         absl::Milliseconds(PROTOBUF_GET_MS_OR_DEFAULT(condition.token_bucket(), fill_interval, 0));

@@ -25,7 +25,7 @@ namespace LocalRateLimit {
 
 class FilterConfig {
 public:
-  FilterConfig(const LocalRateLimitConfig& cfg, Stats::Scope& scope, Event::Dispatcher& dispatcher);
+  FilterConfig(const LocalRateLimitConfig& cfg, Stats::Scope& scope, Event::Dispatcher& dispatcher, Server::Configuration::ServerFactoryContext& context);
   ~FilterConfig() = default;
 
   LocalRateLimitStats& stats() { return stats_; }

@@ -47,7 +47,7 @@ class RouteEntryImplBase : public RouteEntry,
                            public std::enable_shared_from_this<RouteEntryImplBase>,
                            public Logger::Loggable<Logger::Id::filter> {
 public:
-  RouteEntryImplBase(const aeraki::meta_protocol_proxy::config::route::v1alpha::Route& route);
+  RouteEntryImplBase(const aeraki::meta_protocol_proxy::config::route::v1alpha::Route& route, Server::Configuration::CommonFactoryContext& context);
   ~RouteEntryImplBase() override = default;
 
   // Router::RouteEntry
@@ -145,7 +145,7 @@ using RouteEntryImplBaseConstSharedPtr = std::shared_ptr<const RouteEntryImplBas
 
 class RouteEntryImpl : public RouteEntryImplBase {
 public:
-  RouteEntryImpl(const aeraki::meta_protocol_proxy::config::route::v1alpha::Route& route);
+  RouteEntryImpl(const aeraki::meta_protocol_proxy::config::route::v1alpha::Route& route, Server::Configuration::CommonFactoryContext& context);
   ~RouteEntryImpl() override;
 
   // RoutEntryImplBase

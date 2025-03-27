@@ -31,7 +31,8 @@ public:
       const Protobuf::RepeatedPtrField<
           aeraki::meta_protocol_proxy::filters::local_ratelimit::v1alpha::LocalRateLimitCondition>&
       conditions,
-      const LocalRateLimitConfig& cfg);
+      const LocalRateLimitConfig& cfg,
+      Server::Configuration::ServerFactoryContext& context);
   ~LocalRateLimiterImpl();
 
   bool requestAllowed(MetadataSharedPtr metadata) const;

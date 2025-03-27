@@ -27,8 +27,8 @@ namespace RateLimit {
 
 class RateLimit : public CodecFilter, public Upstream::LoadBalancerContextBase, Logger::Loggable<Logger::Id::filter> {
 public:
-  RateLimit(Envoy::Upstream::ClusterManager& cm, const aeraki::meta_protocol_proxy::filters::ratelimit::v1alpha::RateLimit& config)
-   : config_(config), cluster_manager_(cm), config_headers_(Http::HeaderUtility::buildHeaderDataVector(config.match().metadata())) {}
+  RateLimit(Envoy::Upstream::ClusterManager& cm, const aeraki::meta_protocol_proxy::filters::ratelimit::v1alpha::RateLimit& config, Server::Configuration::CommonFactoryContext& context)
+   : config_(config), cluster_manager_(cm), config_headers_(Http::HeaderUtility::buildHeaderDataVector(config.match().metadata(), context)) {}
   ~RateLimit() override = default;
 
   void onDestroy() override;
