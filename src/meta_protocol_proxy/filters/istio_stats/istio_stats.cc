@@ -49,10 +49,13 @@ IstioStats::IstioStats(Server::Configuration::FactoryContext& context,
       connection_security_policy_(pool_.add("connection_security_policy")),
       response_code_(pool_.add("response_code")) {
   traffic_direction_ = traffic_direction;
-  local_node_info_ = Wasm::Common::extractEmptyNodeFlatBuffer();
   if (context.serverFactoryContext().localInfo().node().has_metadata()) {
     local_node_info_ =
         Wasm::Common::extractNodeFlatBufferFromStruct(context.serverFactoryContext().localInfo().node().metadata());
+  } else {
+    google::protobuf::Struct metadata;
+    local_node_info_ =
+        Wasm::Common::extractNodeFlatBufferFromStruct(metadata);
   }
 }
 
@@ -130,13 +133,13 @@ void IstioStats::populateSourceNodeTags(const Wasm::Common::FlatNode& node,
     auto version_view = GetFromFbStringView(version);
     tags.push_back({source_version_, !version_view.empty() ? pool_.add(version_view) : unknown_});
 
-    auto canonical_name = labels->LookupByKey(::Wasm::Common::kCanonicalServiceLabelName.data());
+    auto canonical_name = labels->LookupByKey("service.istio.io/canonical-name");
     auto name = canonical_name ? canonical_name->value() : node.workload_name();
     auto name_view = GetFromFbStringView(name);
     tags.push_back(
         {source_canonical_service_, !name_view.empty() ? pool_.add(name_view) : unknown_});
 
-    auto rev = labels->LookupByKey(::Wasm::Common::kCanonicalServiceRevisionLabelName.data());
+    auto rev = labels->LookupByKey("service.istio.io/canonical-name");
     if (rev) {
       auto rev_view = GetFromFbStringView(rev->value());
       tags.push_back(
@@ -174,13 +177,13 @@ void IstioStats::populateDestinationNodeTags(const Wasm::Common::FlatNode& node,
     tags.push_back(
         {destination_version_, !version_view.empty() ? pool_.add(version_view) : unknown_});
 
-    auto canonical_name = labels->LookupByKey(::Wasm::Common::kCanonicalServiceLabelName.data());
+    auto canonical_name = labels->LookupByKey("service.istio.io/canonical-name");
     auto name = canonical_name ? canonical_name->value() : node.workload_name();
     auto name_view = GetFromFbStringView(name);
     tags.push_back(
         {destination_canonical_service_, !name_view.empty() ? pool_.add(name_view) : unknown_});
 
-    auto rev = labels->LookupByKey(::Wasm::Common::kCanonicalServiceRevisionLabelName.data());
+    auto rev = labels->LookupByKey("service.istio.io/canonical-revision");
     if (rev) {
       auto rev_view = GetFromFbStringView(rev->value());
       tags.push_back(

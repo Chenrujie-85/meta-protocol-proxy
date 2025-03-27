@@ -62,10 +62,19 @@ RdsRouteConfigSubscription::RdsRouteConfigSubscription(
       route_config_provider_manager_(route_config_provider_manager),
       manager_identifier_(manager_identifier) {
   const auto resource_name = getResourceName();
-  subscription_ =
+  absl::StatusOr<Envoy::Config::SubscriptionPtr> subscription_result =
       factory_context.clusterManager().subscriptionFactory().subscriptionFromConfigSource(
-          rds.config_source(), Envoy::Grpc::Common::typeUrl(resource_name), *scope_, *this,
-          resource_decoder_, {});
+          rds.config_source(),
+          Envoy::Grpc::Common::typeUrl(resource_name),
+          *scope_,
+          *this,
+          resource_decoder_,
+          {});
+  if (subscription_result.ok()) {
+    subscription_ = std::move(*subscription_result);
+  } else {
+    ENVOY_LOG(error, "Initializing subscription_ failed.");
+  }
   local_init_manager_.add(local_init_target_);
   config_update_info_ = std::make_unique<RouteConfigUpdateReceiverImpl>(factory_context);
 }

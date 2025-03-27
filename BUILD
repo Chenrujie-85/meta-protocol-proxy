@@ -14,8 +14,6 @@ envoy_cc_binary(
         "//src/application_protocols/thrift:config",
         "//src/application_protocols/brpc:config",
         "//src/application_protocols/trpc:config",
-        "@io_istio_proxy//extensions/access_log_policy:access_log_policy_lib",
-        "@io_istio_proxy//extensions/stackdriver:stackdriver_plugin",
         "@io_istio_proxy//source/extensions/common/workload_discovery:api_lib",  # Experimental: WIP
         "@io_istio_proxy//source/extensions/filters/http/alpn:config_lib",
         "@io_istio_proxy//source/extensions/filters/http/istio_stats",

@@ -21,18 +21,18 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_istio_proxy",
-    strip_prefix = "proxy-1.22.0",
-    sha256 = "bc48799d4635174fbe1f875a5b82f97844809ad4027ad8b0106f5f4c2216d205",
-    url = "https://github.com/istio/proxy/archive/refs/tags/1.22.0.tar.gz",
+    strip_prefix = "proxy-1.23.0",
+    sha256 = "06489d7379741cd0fb5d7bddcca7616ebc1c02fc6470afe463e48d5d01653b2a",
+    url = "https://github.com/istio/proxy/archive/refs/tags/1.23.0.tar.gz",
 )
 
 # 1. Determine SHA256 `wget https://github.com/envoyproxy/envoy/archive/$COMMIT.tar.gz && sha256sum $COMMIT.tar.gz`
 # 2. Update .bazelversion, envoy.bazelrc and .bazelrc if needed.
 #
-# Commit date: 2024-08-22
-ENVOY_SHA = "7f895e93006f03b3932d5bfa36c6071a70945c63"
+# Commit date: 2024-08-23
+ENVOY_SHA = "43f5f370dfa3805242e8a48997f99d24c46c68fa"
 
-ENVOY_SHA256 = "f481a5b218f9ebdc0c29205726073eb26c1b6816f7a25f1c1b888b3d1cbd86d1"
+ENVOY_SHA256 = "7b6a1369aa2f4b3a309854a41a7b37935201027bd8e28a994c89f05e81fb3d9c"
 
 ENVOY_ORG = "envoyproxy"
 
@@ -45,7 +45,10 @@ http_archive(
     sha256 = ENVOY_SHA256,
     strip_prefix = ENVOY_REPO + "-" + ENVOY_SHA,
     url = "https://github.com/" + ENVOY_ORG + "/" + ENVOY_REPO + "/archive/" + ENVOY_SHA + ".tar.gz",
-    patches = ["//:patches/0001-expose-some-build-file-as-public.patch"],
+    patches = [
+            "//:patches/0001-expose-some-build-file-as-public.patch",
+            "//:patches/0002-envoy-bazel-repo-location.patch",
+            "//:patches/0003-envoy-bazel-repo-location.patch"],
 )
 
 load("@envoy//bazel:api_binding.bzl", "envoy_api_binding")
@@ -81,3 +84,13 @@ install_deps()
 load("@envoy//bazel:dependency_imports.bzl", "envoy_dependency_imports")
 
 envoy_dependency_imports()
+
+load("@bazel_gazelle//:deps.bzl", "go_repository")
+
+go_repository(
+    name = "org_golang_x_tools",
+    importpath = "golang.org/x/tools",
+    sum = "h1:po9/4sTYwOU9QPo1XTU8+YLNBPyXgS4nSdIjxNBXtxg=",
+    version = "v0.1.12",
+    build_external = "external",
+)

@@ -23,6 +23,12 @@ namespace LocalRateLimit {
 using LocalRateLimitConfig =
 aeraki::meta_protocol_proxy::filters::local_ratelimit::v1alpha::LocalRateLimit;
 
+struct TokenBucket {
+  uint32_t max_tokens_;
+  uint32_t tokens_per_fill_;
+  absl::Duration fill_interval_;
+};
+
 class LocalRateLimiterImpl {
 public:
   LocalRateLimiterImpl(
@@ -46,15 +52,15 @@ private:
   struct LocalRateLimitCondition {
     std::unique_ptr<TokenState> token_state_;
     std::vector<Http::HeaderUtility::HeaderDataPtr> match_;
-    RateLimit::TokenBucket token_bucket_;
+    TokenBucket token_bucket_;
   };
 
   void onFillTimer();
-  void onFillTimerHelper(const TokenState& state, const RateLimit::TokenBucket& bucket);
+  void onFillTimerHelper(const TokenState& state, const TokenBucket& bucket);
   void onFillTimerConditionHelper();
   bool requestAllowedHelper(const TokenState& tokens) const;
 
-  RateLimit::TokenBucket global_token_bucket_; // The global token bucket for the whole service
+  TokenBucket global_token_bucket_; // The global token bucket for the whole service
   TokenState global_token_state_;                   // The global token for the whole service
   const Event::TimerPtr fill_timer_;
   TimeSource& time_source_;

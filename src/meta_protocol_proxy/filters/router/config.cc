@@ -23,7 +23,7 @@ FilterFactoryCb RouterFilterConfig::createFilterFactoryFromProtoTyped(
   // member of the MetaProtocol ConfigImpl
   return [&context, shadow_writer](FilterChainFactoryCallbacks& callbacks) -> void {
     callbacks.addFilter(
-        std::make_shared<Router>(context.serverFactoryContext().clusterManager(), context.serverFactoryContext().runtime(), *shadow_writer));
+        std::make_shared<Router>(context.serverFactoryContext().clusterManager(), context.serverFactoryContext().runtime(), static_cast<ShadowWriter&>(*shadow_writer)));
   };
 }
 

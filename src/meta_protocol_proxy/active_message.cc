@@ -244,7 +244,8 @@ ActiveMessage::ActiveMessage(ConnectionManager& connection_manager)
           connection_manager.randomGenerator().random()), // todo: we don't need stream id here?
       stream_info_(std::make_unique<StreamInfo::StreamInfoImpl>(
           connection_manager.timeSystem(),
-          connection_manager.connection().connectionInfoProviderSharedPtr())),
+          connection_manager.connection().connectionInfoProviderSharedPtr(),
+          StreamInfo::FilterState::LifeSpan::FilterChain)),
       pending_stream_decoded_(false), local_response_sent_(false) {
   connection_manager.stats().request_active_.inc();
 }

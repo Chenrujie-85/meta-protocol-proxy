@@ -13,7 +13,6 @@
 
 // istio proxy
 #include "extensions/common/proto_util.h"
-#include "extensions/common/context.h"
 
 #include "src/meta_protocol_proxy/codec/codec.h"
 

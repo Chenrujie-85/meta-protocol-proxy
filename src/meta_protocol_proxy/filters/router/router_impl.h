@@ -6,7 +6,7 @@
 #include "envoy/tcp/conn_pool.h"
 #include "envoy/tracing/trace_driver.h"
 
-#include "source/common/upstream/load_balancer_impl.h"
+#include "source/common/upstream/load_balancer_context_base.h"
 #include "source/common/stream_info/stream_info_impl.h"
 
 #include "src/meta_protocol_proxy/filters/filter.h"

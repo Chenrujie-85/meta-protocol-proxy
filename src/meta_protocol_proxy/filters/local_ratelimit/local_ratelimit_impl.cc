@@ -75,7 +75,7 @@ void LocalRateLimiterImpl::onFillTimer() {
 }
 
 void LocalRateLimiterImpl::onFillTimerHelper(const TokenState& tokens,
-                                             const RateLimit::TokenBucket& bucket) {
+                                             const TokenBucket& bucket) {
   // Relaxed consistency is used for all operations because we don't care about ordering, just the
   // final atomic correctness.
   uint32_t expected_tokens = tokens.tokens_.load(std::memory_order_relaxed);

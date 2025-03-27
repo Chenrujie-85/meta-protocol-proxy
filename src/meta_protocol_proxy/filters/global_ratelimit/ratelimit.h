@@ -10,7 +10,7 @@
 #include "source/common/buffer/buffer_impl.h"
 #include "envoy/upstream/cluster_manager.h"
 #include "envoy/upstream/thread_local_cluster.h"
-#include "source/common/upstream/load_balancer_impl.h"
+#include "source/common/upstream/load_balancer_context_base.h"
 #include "envoy/network/connection.h"
 #include "source/common/http/header_utility.h"
 
