@@ -6,8 +6,6 @@
 #include "source/common/common/logger.h"
 
 // istio proxy
-#include "extensions/common/proto_util.h"
-
 #include "api/meta_protocol_proxy/filters/istio_stats/v1alpha/istio_stats.pb.h"
 #include "src/meta_protocol_proxy/filters/filter.h"
 #include "src/meta_protocol_proxy/filters/istio_stats/istio_stats.h"
@@ -36,12 +34,12 @@ public:
   FilterStatus onMessageEncoded(MetadataSharedPtr, MutationSharedPtr) override;
 
 private:
-  flatbuffers::DetachedBuffer extractPeerNodeMetadata(MetadataSharedPtr metadata);
+  google::protobuf::Struct extractPeerNodeMetadata(MetadataSharedPtr metadata);
 
   // traffic direction, inbound or outbound
   envoy::config::core::v3::TrafficDirection traffic_direction_;
 
-  flatbuffers::DetachedBuffer peer_node_info_;
+  google::protobuf::Struct peer_node_metadata_;
   IstioStats& istio_stats_;
   const std::string& destination_service_;
 };

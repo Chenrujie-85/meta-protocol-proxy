@@ -12,8 +12,6 @@
 #include "source/common/stats/utility.h"
 
 // istio proxy
-#include "extensions/common/proto_util.h"
-
 #include "src/meta_protocol_proxy/codec/codec.h"
 
 namespace Envoy {
@@ -28,16 +26,16 @@ public:
   IstioStats(Server::Configuration::FactoryContext& context,
              envoy::config::core::v3::TrafficDirection traffic_direction);
 
-  void report(const ::Wasm::Common::FlatNode& node, MetadataSharedPtr metadata,
+  void report(const google::protobuf::Struct& peer_metadata, MetadataSharedPtr metadata,
               const std::string& destination_service);
 
 private:
-  void populateSourceNodeTags(const Wasm::Common::FlatNode& node, Stats::StatNameTagVector& tags);
-  void populateDestinationNodeTags(const Wasm::Common::FlatNode& node,
+  void populateSourceTagsFromStruct(const google::protobuf::Struct& metadata, Stats::StatNameTagVector& tags);
+  void populateDestTagsFromStruct(const google::protobuf::Struct& metadata,
                                    Stats::StatNameTagVector& tags);
   // traffic direction, inbound or outbound
   envoy::config::core::v3::TrafficDirection traffic_direction_;
-  flatbuffers::DetachedBuffer local_node_info_;
+  google::protobuf::Struct local_node_metadata_;
   Stats::Scope& scope_;
   Stats::StatNameDynamicPool pool_;
   absl::flat_hash_map<std::string, Stats::StatName> all_metrics_;

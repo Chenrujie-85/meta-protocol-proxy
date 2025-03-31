@@ -6,7 +6,7 @@
 #include "source/common/common/logger.h"
 
 // istio proxy
-#include "extensions/common/proto_util.h"
+#include "extensions/common/metadata_object.h"
 
 #include "api/meta_protocol_proxy/filters/metadata_exchange/v1alpha/metadata_exchange.pb.h"
 #include "src/meta_protocol_proxy/filters/filter.h"

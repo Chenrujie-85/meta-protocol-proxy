@@ -68,7 +68,6 @@ envoy_cc_library(
     name = "route_config_update_info_interface",
     repository = "@envoy",
     hdrs = ["route_config_update_receiver.h"],
-    external_deps = ["abseil_optional"],
     deps = [
         ":rds_interface",
         "//api/meta_protocol_proxy/filters/router/v1alpha:pkg_cc_proto",
@@ -83,7 +82,6 @@ envoy_cc_library(
     repository = "@envoy",
     srcs = ["config_impl.cc"],
     hdrs = ["config_impl.h"],
-    external_deps = ["abseil_optional"],
     deps = [
         ":route_matcher_interface",
         ":route_matcher",

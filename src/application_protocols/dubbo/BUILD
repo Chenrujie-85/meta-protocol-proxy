@@ -45,13 +45,11 @@ envoy_cc_library(
     repository = "@envoy",
     srcs = ["hessian_utils.cc"],
     hdrs = ["hessian_utils.h"],
-    external_deps = [
-        "hessian2_codec_codec_impl",
-        "hessian2_codec_object_codec_lib",
-    ],
     deps = [
         "@envoy//envoy/buffer:buffer_interface",
         "@envoy//source/common/singleton:const_singleton",
+        "@com_github_alibaba_hessian2_codec//hessian2:codec_impl_lib",
+        "@com_github_alibaba_hessian2_codec//hessian2/basic_codec:object_codec_lib",
     ],
 )
 
@@ -76,7 +74,6 @@ envoy_cc_library(
     name = "metadata_lib",
     repository = "@envoy",
     hdrs = ["metadata.h"],
-    external_deps = ["abseil_optional"],
     deps = [
         ":message_lib",
         "@envoy//source/common/buffer:buffer_lib",

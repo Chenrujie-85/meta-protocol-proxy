@@ -48,7 +48,7 @@ LocalRateLimiterImpl::LocalRateLimiterImpl(
   for (const auto& condition : conditions) {
     LocalRateLimitCondition new_condition;
     new_condition.match_ = Http::HeaderUtility::buildHeaderDataVector(condition.match().metadata(), context);
-    RateLimit::TokenBucket token_bucket;
+    TokenBucket token_bucket;
     token_bucket.fill_interval_ =
         absl::Milliseconds(PROTOBUF_GET_MS_OR_DEFAULT(condition.token_bucket(), fill_interval, 0));
     token_bucket.max_tokens_ = condition.token_bucket().max_tokens();

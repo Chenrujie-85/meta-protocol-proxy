@@ -36,12 +36,11 @@ FilterStatus MetadataExchangeFilter::onMessageEncoded(MetadataSharedPtr,
 
 void MetadataExchangeFilter::loadMetadataFromNodeInfo(const LocalInfo::LocalInfo& local_info) {
   if (local_info.node().has_metadata()) {
-    google::protobuf::Struct metadata;
-    const auto fb = Wasm::Common::extractNodeFlatBufferFromStruct(local_info.node().metadata());
-    Wasm::Common::extractStructFromNodeFlatBuffer(
-        *flatbuffers::GetRoot<Wasm::Common::FlatNode>(fb.data()), &metadata);
+    const auto obj = Istio::Common::convertStructToWorkloadMetadata(local_info.node().metadata());
+    google::protobuf::Struct processed_metadata = Istio::Common::convertWorkloadMetadataToStruct(*obj);
     std::string metadata_bytes;
-    Wasm::Common::serializeToStringDeterministic(metadata, &metadata_bytes);
+    google::protobuf::io::StringOutputStream stream(&metadata_bytes); 
+    processed_metadata.SerializePartialToZeroCopyStream(&stream);
     local_node_metadata_ = Base64::encode(metadata_bytes.data(), metadata_bytes.size());
   }
   local_node_metadata_id_ = local_info.node().id();

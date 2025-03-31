@@ -50,38 +50,42 @@ IstioStats::IstioStats(Server::Configuration::FactoryContext& context,
       response_code_(pool_.add("response_code")) {
   traffic_direction_ = traffic_direction;
   if (context.serverFactoryContext().localInfo().node().has_metadata()) {
-    local_node_info_ =
-        Wasm::Common::extractNodeFlatBufferFromStruct(context.serverFactoryContext().localInfo().node().metadata());
+    local_node_metadata_.CopyFrom(context.serverFactoryContext().localInfo().node().metadata());
   } else {
-    google::protobuf::Struct metadata;
-    local_node_info_ =
-        Wasm::Common::extractNodeFlatBufferFromStruct(metadata);
+    local_node_metadata_.Clear();
   }
 }
 
-// Returns a string view stored in a flatbuffers string.
-static inline absl::string_view GetFromFbStringView(const flatbuffers::String* str) {
-  return str ? absl::string_view(str->c_str(), str->size()) : absl::string_view();
+// Return String from  Struct
+static std::string getStringFromStruct(const google::protobuf::Struct& s, const std::string& key) {
+  auto it = s.fields().find(key);
+  return (it != s.fields().end()) ? it->second.string_value() : "";
 }
 
-void IstioStats::report(const Wasm::Common::FlatNode& peer_node, MetadataSharedPtr metadata,
+// Return SubStruct
+static const google::protobuf::Struct& getSubStruct(const google::protobuf::Struct& s, const std::string& key) {
+  static const google::protobuf::Struct empty_struct;
+  auto it = s.fields().find(key);
+  return (it != s.fields().end()) ? it->second.struct_value() : empty_struct;
+}
+
+void IstioStats::report(const google::protobuf::Struct& peer_metadata, MetadataSharedPtr metadata,
                         const std::string& destination_service) {
   Stats::StatNameTagVector tags;
   tags.reserve(25);
-  const auto& local_node = *flatbuffers::GetRoot<Wasm::Common::FlatNode>(local_node_info_.data());
 
   if (traffic_direction_ == envoy::config::core::v3::TrafficDirection::INBOUND) {
     tags.push_back({reporter_, destination_});
-    populateSourceNodeTags(peer_node, tags);
-    populateDestinationNodeTags(local_node, tags);
+    populateSourceTagsFromStruct(peer_metadata, tags);
+    populateDestTagsFromStruct(local_node_metadata_, tags);
     // use the destination_service in the stats config for inbound traffic
     auto destination_service_name = pool_.add(destination_service);
     tags.push_back({destination_service_, destination_service_name});
     tags.push_back({destination_service_name_, destination_service_name});
   } else {
     tags.push_back({reporter_, source_});
-    populateSourceNodeTags(local_node, tags);
-    populateDestinationNodeTags(peer_node, tags);
+    populateSourceTagsFromStruct(local_node_metadata_, tags);
+    populateDestTagsFromStruct(peer_metadata, tags);
     // extract the destination_service from the cluster name for outbound traffic
     if (metadata->streamInfo().upstreamClusterInfo().has_value() &&
         metadata->streamInfo().upstreamClusterInfo().value()) {
@@ -113,35 +117,37 @@ void IstioStats::report(const Wasm::Common::FlatNode& peer_node, MetadataSharedP
       .recordValue(metadata->streamInfo().bytesReceived());
 }
 
-void IstioStats::populateSourceNodeTags(const Wasm::Common::FlatNode& node,
+void IstioStats::populateSourceTagsFromStruct(const google::protobuf::Struct& metadata,
                                         Stats::StatNameTagVector& tags) {
-  auto workload = GetFromFbStringView(node.workload_name());
-  tags.push_back({source_workload_, !workload.empty() ? pool_.add(workload) : unknown_});
-  auto ns = GetFromFbStringView(node.namespace_());
-  tags.push_back({source_workload_namespace_, !ns.empty() ? pool_.add(ns) : unknown_});
-  auto cluster = GetFromFbStringView(node.cluster_id());
-  tags.push_back({source_cluster_, !cluster.empty() ? pool_.add(cluster) : unknown_});
-  auto labels = node.labels();
-  if (labels) {
-    auto app_iter = labels->LookupByKey("app");
-    auto app = app_iter ? app_iter->value() : nullptr;
-    auto app_view = GetFromFbStringView(app);
+  auto workload = getStringFromStruct(metadata, "WORKLOAD_NAME");
+  tags.push_back({source_workload_, !workload.empty() ? pool_.add(std::string_view(workload.data(), workload.size())) : unknown_});
+  auto ns = getStringFromStruct(metadata, "NAMESPACE");
+  tags.push_back({source_workload_namespace_, !ns.empty() ? pool_.add(std::string_view(ns.data(), ns.size())) : unknown_});
+  auto cluster = getStringFromStruct(metadata, "CLUSTER_ID");
+  tags.push_back({source_cluster_, !cluster.empty() ? pool_.add(std::string_view(cluster.data(), cluster.size())) : unknown_});
+  const auto& labels = getSubStruct(metadata, "LABELS");
+  if (!labels.fields().empty()) {
+    auto app = getStringFromStruct(labels, "app");
+    auto app_view = (!app.empty() ? std::string_view(app.data(), app.size()) : std::string_view());
     tags.push_back({source_app_, !app_view.empty() ? pool_.add(app_view) : unknown_});
 
-    auto version_iter = labels->LookupByKey("version");
-    auto version = version_iter ? version_iter->value() : nullptr;
-    auto version_view = GetFromFbStringView(version);
+    auto version = getStringFromStruct(labels, "version");
+    auto version_view = (!version.empty() ? std::string_view(version.data(), version.size()) : std::string_view());
     tags.push_back({source_version_, !version_view.empty() ? pool_.add(version_view) : unknown_});
 
-    auto canonical_name = labels->LookupByKey("service.istio.io/canonical-name");
-    auto name = canonical_name ? canonical_name->value() : node.workload_name();
-    auto name_view = GetFromFbStringView(name);
+    auto name = getStringFromStruct(labels, "service.istio.io/canonical-name");
+    std::string_view name_view;
+    if (name.empty()) {
+      name_view = (!workload.empty() ? std::string_view(workload.data(), workload.size()) : std::string_view());
+    } else {
+      name_view = std::string_view(name.data(), name.size());
+    }
     tags.push_back(
         {source_canonical_service_, !name_view.empty() ? pool_.add(name_view) : unknown_});
 
-    auto rev = labels->LookupByKey("service.istio.io/canonical-name");
-    if (rev) {
-      auto rev_view = GetFromFbStringView(rev->value());
+    auto rev = getStringFromStruct(labels, "service.istio.io/canonical-revision");
+    if (!rev.empty()) {
+      auto rev_view = std::string_view(rev.data(), rev.size());
       tags.push_back(
           {source_canonical_revision_, !rev_view.empty() ? pool_.add(rev_view) : unknown_});
     } else {
@@ -155,37 +161,39 @@ void IstioStats::populateSourceNodeTags(const Wasm::Common::FlatNode& node,
   }
 }
 
-void IstioStats::populateDestinationNodeTags(const Wasm::Common::FlatNode& node,
+void IstioStats::populateDestTagsFromStruct(const google::protobuf::Struct& metadata,
                                              Stats::StatNameTagVector& tags) {
-  auto workload = GetFromFbStringView(node.workload_name());
-  tags.push_back({destination_workload_, !workload.empty() ? pool_.add(workload) : unknown_});
-  auto ns = GetFromFbStringView(node.namespace_());
-  tags.push_back({destination_service_namespace_, !ns.empty() ? pool_.add(ns) : unknown_});
-  tags.push_back({destination_workload_namespace_, !ns.empty() ? pool_.add(ns) : unknown_});
-  auto cluster = GetFromFbStringView(node.cluster_id());
-  tags.push_back({destination_cluster_, !cluster.empty() ? pool_.add(cluster) : unknown_});
-  auto labels = node.labels();
-  if (labels) {
-    auto app_iter = labels->LookupByKey("app");
-    auto app = app_iter ? app_iter->value() : nullptr;
-    auto app_view = GetFromFbStringView(app);
+  auto workload = getStringFromStruct(metadata, "WORKLOAD_NAME");
+  tags.push_back({destination_workload_, !workload.empty() ? pool_.add(std::string_view(workload.data(), workload.size())) : unknown_});
+  auto ns = getStringFromStruct(metadata, "NAMESPACE");
+  tags.push_back({destination_service_namespace_, !ns.empty() ? pool_.add(std::string_view(ns.data(), ns.size())) : unknown_});
+  tags.push_back({destination_workload_namespace_, !ns.empty() ? pool_.add(std::string_view(ns.data(), ns.size())) : unknown_});
+  auto cluster = getStringFromStruct(metadata, "CLUSTER_ID");
+  tags.push_back({destination_cluster_, !cluster.empty() ? pool_.add(std::string_view(cluster.data(), cluster.size())) : unknown_});
+  const auto& labels = getSubStruct(metadata, "LABELS");
+  if (!labels.fields().empty()) {
+    auto app = getStringFromStruct(labels, "app");
+    auto app_view = (!app.empty() ? std::string_view(app.data(), app.size()) : std::string_view());
     tags.push_back({destination_app_, !app_view.empty() ? pool_.add(app_view) : unknown_});
 
-    auto version_iter = labels->LookupByKey("version");
-    auto version = version_iter ? version_iter->value() : nullptr;
-    auto version_view = GetFromFbStringView(version);
+    auto version = getStringFromStruct(labels, "version");
+    auto version_view = (!version.empty() ? std::string_view(version.data(), version.size()) : std::string_view());
     tags.push_back(
         {destination_version_, !version_view.empty() ? pool_.add(version_view) : unknown_});
 
-    auto canonical_name = labels->LookupByKey("service.istio.io/canonical-name");
-    auto name = canonical_name ? canonical_name->value() : node.workload_name();
-    auto name_view = GetFromFbStringView(name);
+    auto name = getStringFromStruct(labels, "service.istio.io/canonical-name");
+    std::string_view name_view;
+    if (name.empty()) {
+      name_view = (!workload.empty() ? std::string_view(workload.data(), workload.size()) : std::string_view());
+    } else {
+      name_view = std::string_view(name.data(), name.size());
+    }
     tags.push_back(
         {destination_canonical_service_, !name_view.empty() ? pool_.add(name_view) : unknown_});
 
-    auto rev = labels->LookupByKey("service.istio.io/canonical-revision");
-    if (rev) {
-      auto rev_view = GetFromFbStringView(rev->value());
+    auto rev = getStringFromStruct(labels, "service.istio.io/canonical-revision");
+    if (!rev.empty()) {
+      auto rev_view = std::string_view(rev.data(), rev.size());
       tags.push_back(
           {destination_canonical_revision_, !rev_view.empty() ? pool_.add(rev_view) : unknown_});
     } else {

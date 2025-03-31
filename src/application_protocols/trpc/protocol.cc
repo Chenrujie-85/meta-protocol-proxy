@@ -41,7 +41,7 @@ bool TrpcFixedHeader::decode(Buffer::Instance& buff, bool drain) {
   // 非trpc协议,断开连接
   if (magic_value != trpc::TrpcMagic::TRPC_MAGIC_VALUE) {
     ENVOY_LOG(debug, "decode magic_value:{} != {}.", magic_value,
-              trpc::TrpcMagic::TRPC_MAGIC_VALUE);
+              static_cast<uint16_t>(trpc::TrpcMagic::TRPC_MAGIC_VALUE));
     return false;
   }
   pos += TRPC_PROTO_MAGIC_SPACE;
